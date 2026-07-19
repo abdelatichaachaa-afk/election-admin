@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+        import { useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
 
 const STATUS_LABELS = {
@@ -12,9 +12,11 @@ export default function Elections() {
   const [elections, setElections] = useState([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
+  const [editingId, setEditingId] = useState(null)
   const [form, setForm] = useState({ name: '', type: '', election_date: '', description: '' })
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [deleteTarget, setDeleteTarget] = useState(null)
 
   useEffect(() => {
     loadElections()
@@ -30,7 +32,26 @@ export default function Elections() {
     setLoading(false)
   }
 
-  async function handleCreate(e) {
+  function openCreateForm() {
+    setEditingId(null)
+    setForm({ name: '', type: '', election_date: '', description: '' })
+    setShowForm(true)
+    setError('')
+  }
+
+  function openEditForm(el) {
+    setEditingId(el.id)
+    setForm({
+      name: el.name || '',
+      type: el.type || '',
+      election_date: el.election_date || '',
+      description: el.description || '',
+    })
+    setShowForm(true)
+    setError('')
+  }
+
+  async function handleSave(e) {
     e.preventDefault()
     setError('')
     if (!form.name.trim()) {
@@ -38,19 +59,28 @@ export default function Elections() {
       return
     }
     setSaving(true)
-    const { error } = await supabase.from('elections').insert({
+
+    const payload = {
       name: form.name,
       type: form.type || null,
       election_date: form.election_date || null,
       description: form.description || null,
-    })
+    }
+
+    let error
+    if (editingId) {
+      ;({ error } = await supabase.from('elections').update(payload).eq('id', editingId))
+    } else {
+      ;({ error } = await supabase.from('elections').insert(payload))
+    }
+
     setSaving(false)
     if (error) {
       setError('حدث خطأ أثناء الحفظ: ' + error.message)
       return
     }
-    setForm({ name: '', type: '', election_date: '', description: '' })
     setShowForm(false)
+    setEditingId(null)
     loadElections()
   }
 
@@ -59,12 +89,19 @@ export default function Elections() {
     loadElections()
   }
 
+  async function confirmDelete() {
+    if (!deleteTarget) return
+    await supabase.from('elections').delete().eq('id', deleteTarget.id)
+    setDeleteTarget(null)
+    loadElections()
+  }
+
   return (
     <div>
       <div className="flex items-center justify-between mb-5">
         <h2 className="text-xl font-bold text-gray-800">الانتخابات</h2>
         <button
-          onClick={() => setShowForm(!showForm)}
+          onClick={showForm ? () => setShowForm(false) : openCreateForm}
           className="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg px-4 py-2"
         >
           {showForm ? 'إلغاء' : '+ انتخابات جديدة'}
@@ -73,9 +110,12 @@ export default function Elections() {
 
       {showForm && (
         <form
-          onSubmit={handleCreate}
+          onSubmit={handleSave}
           className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-6 space-y-3"
         >
+          <h3 className="font-semibold text-gray-700">
+            {editingId ? 'تعديل الانتخابات' : 'انتخابات جديدة'}
+          </h3>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">اسم الانتخابات *</label>
             <input
@@ -118,7 +158,7 @@ export default function Elections() {
             disabled={saving}
             className="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg px-4 py-2 disabled:opacity-50"
           >
-            {saving ? 'جاري الحفظ...' : 'حفظ'}
+            {saving ? 'جاري الحفظ...' : editingId ? 'حفظ التعديلات' : 'حفظ'}
           </button>
         </form>
       )}
@@ -128,14 +168,15 @@ export default function Elections() {
       ) : elections.length === 0 ? (
         <p className="text-gray-500">لا توجد انتخابات بعد.</p>
       ) : (
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto">
+          <table className="w-full text-sm min-w-[600px]">
             <thead className="bg-gray-50 text-gray-600">
               <tr>
                 <th className="text-right px-4 py-3">الاسم</th>
                 <th className="text-right px-4 py-3">النوع</th>
                 <th className="text-right px-4 py-3">التاريخ</th>
                 <th className="text-right px-4 py-3">الحالة</th>
+                <th className="text-right px-4 py-3">إجراءات</th>
               </tr>
             </thead>
             <tbody>
@@ -157,10 +198,49 @@ export default function Elections() {
                       ))}
                     </select>
                   </td>
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    <button
+                      onClick={() => openEditForm(el)}
+                      className="text-emerald-700 hover:bg-emerald-50 rounded-lg px-2 py-1 text-sm ml-1"
+                    >
+                      تعديل
+                    </button>
+                    <button
+                      onClick={() => setDeleteTarget(el)}
+                      className="text-red-600 hover:bg-red-50 rounded-lg px-2 py-1 text-sm"
+                    >
+                      حذف
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {deleteTarget && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl p-6 max-w-sm w-full" dir="rtl">
+            <h3 className="font-bold text-gray-800 mb-2">تأكيد الحذف</h3>
+            <p className="text-gray-600 text-sm mb-5">
+              هل أنت متأكد من حذف "{deleteTarget.name}"؟ سيتم حذف كل البيانات المرتبطة بها (مراكز، مكاتب، نتائج). لا يمكن التراجع عن هذا الإجراء.
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={confirmDelete}
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white rounded-lg py-2 text-sm font-medium"
+              >
+                نعم، احذف
+              </button>
+              <button
+                onClick={() => setDeleteTarget(null)}
+                className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg py-2 text-sm font-medium"
+              >
+                إلغاء
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
