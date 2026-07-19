@@ -5,6 +5,7 @@ import Layout from './pages/Layout'
 import Dashboard from './pages/Dashboard'
 import Elections from './pages/Elections'
 import Centers from './pages/Centers'
+import Stations from './pages/Stations'
 import ComingSoon from './pages/ComingSoon'
 
 function ProtectedApp() {
@@ -36,7 +37,7 @@ function ProtectedApp() {
         <Route index element={<Dashboard />} />
         <Route path="elections" element={<Elections />} />
         <Route path="centers" element={<Centers />} />
-        <Route path="stations" element={<ComingSoon title="مكاتب الاقتراع" />} />
+        <Route path="stations" element={<Stations />} />
         <Route path="monitors" element={<ComingSoon title="المراقبون" />} />
         <Route path="candidates" element={<ComingSoon title="المترشحون والأحزاب" />} />
         <Route path="results" element={<ComingSoon title="النتائج" />} />
