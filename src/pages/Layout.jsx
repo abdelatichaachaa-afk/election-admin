@@ -12,17 +12,34 @@ const navItems = [
   { to: '/results', label: 'النتائج' },
 ]
 
+function MoroccoStar({ className }) {
+  return (
+    <svg viewBox="0 0 100 100" className={className} fill="none">
+      <path
+        d="M50 8 L61 38 L93 38 L67 57 L77 88 L50 69 L23 88 L33 57 L7 38 L39 38 Z"
+        stroke="currentColor"
+        strokeWidth="5"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
 export default function Layout() {
   const { profile, signOut } = useAuth()
   const [menuOpen, setMenuOpen] = useState(false)
 
   return (
     <div className="min-h-screen bg-gray-50 md:flex" dir="rtl">
-      <div className="md:hidden flex items-center justify-between bg-white border-b border-gray-200 px-4 py-3">
-        <h1 className="font-bold text-gray-800">لوحة التحكم</h1>
+      {/* Header - Moroccan flag theme */}
+      <div className="md:hidden bg-gradient-to-l from-red-700 to-red-600 px-4 py-3 flex items-center justify-between text-white">
+        <div className="flex items-center gap-2">
+          <MoroccoStar className="w-6 h-6 text-emerald-400" />
+          <h1 className="font-bold">لوحة التحكم</h1>
+        </div>
         <button
           onClick={() => setMenuOpen(!menuOpen)}
-          className="text-gray-600 border border-gray-300 rounded-lg px-3 py-1.5 text-sm"
+          className="border border-white/40 rounded-lg px-3 py-1.5 text-sm"
         >
           ☰ القائمة
         </button>
@@ -31,11 +48,18 @@ export default function Layout() {
       <aside
         className={`${
           menuOpen ? 'block' : 'hidden'
-        } md:block w-full md:w-60 bg-white border-b md:border-b-0 md:border-l border-gray-200 flex-col shrink-0`}
+        } md:block w-full md:w-64 bg-white border-b md:border-b-0 md:border-l border-gray-200 flex-col shrink-0`}
       >
-        <div className="hidden md:block p-5 border-b border-gray-200">
-          <h1 className="font-bold text-lg text-gray-800">لوحة التحكم</h1>
-          <p className="text-xs text-gray-500 mt-1">{profile?.full_name}</p>
+        <div className="hidden md:flex items-center gap-3 bg-gradient-to-l from-red-700 to-red-600 p-5">
+          <MoroccoStar className="w-9 h-9 text-emerald-400 shrink-0" />
+          <div>
+            <h1 className="font-bold text-lg text-white">لوحة التحكم</h1>
+            <p className="text-xs text-red-100 mt-0.5">الانتخابات التشريعية 2026</p>
+          </div>
+        </div>
+        <div className="hidden md:block px-5 py-3 border-b border-gray-100">
+          <p className="text-xs text-gray-500">مرحباً بك</p>
+          <p className="text-sm font-medium text-gray-800">{profile?.full_name}</p>
         </div>
         <nav className="p-3 space-y-1">
           {navItems.map((item) => (
