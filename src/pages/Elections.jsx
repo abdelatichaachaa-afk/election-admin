@@ -1,4 +1,4 @@
-        import { useEffect, useState } from 'react'
+ import { useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
 
 const STATUS_LABELS = {
@@ -6,6 +6,35 @@ const STATUS_LABELS = {
   ongoing: 'جارية',
   finished: 'منتهية',
   archived: 'مؤرشفة',
+}
+
+function MoroccoStar({ className }) {
+  return (
+    <svg viewBox="0 0 100 100" className={className} fill="none">
+      <path
+        d="M50 8 L61 38 L93 38 L67 57 L77 88 L50 69 L23 88 L33 57 L7 38 L39 38 Z"
+        stroke="currentColor"
+        strokeWidth="5"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
+function Banner() {
+  return (
+    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-l from-red-700 via-red-600 to-red-700 text-white p-6 mb-6">
+      <MoroccoStar className="absolute -left-4 -top-4 w-32 h-32 text-white/10" />
+      <MoroccoStar className="absolute -right-6 -bottom-6 w-40 h-40 text-white/10" />
+      <div className="relative flex items-center gap-4">
+        <MoroccoStar className="w-14 h-14 text-emerald-400 shrink-0" />
+        <div>
+          <h1 className="text-xl font-bold">الانتخابات التشريعية 2026</h1>
+          <p className="text-red-100 text-sm mt-1">المملكة المغربية — إدارة ومتابعة نتائج الاقتراع</p>
+        </div>
+      </div>
+    </div>
+  )
 }
 
 export default function Elections() {
@@ -98,6 +127,8 @@ export default function Elections() {
 
   return (
     <div>
+      <Banner />
+
       <div className="flex items-center justify-between mb-5">
         <h2 className="text-xl font-bold text-gray-800">الانتخابات</h2>
         <button
